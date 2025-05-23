@@ -1,32 +1,7 @@
-# Dockerfile
 FROM php:8.2-fpm
-
-# Instala extensiones necesarias
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libpng-dev \
-    libjpeg-dev \
-    libonig-dev \
-    libxml2-dev \
-    zip \
-    unzip \
-    curl \
-    git \
-    libzip-dev \
-    && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip
-
-# Instala Composer
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
-
-# Establece el directorio de trabajo
-WORKDIR /var/www
-
-# Copia archivos del proyecto al contenedor
-COPY . .
-
-# Da permisos a storage y bootstrap/cache
-RUN chown -R www-data:www-data /var/www \
-    && chmod -R 755 /var/www/storage
-
-EXPOSE 9000
-CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
+WORKDIR /usr/src/app
+COPY . ./
+COPY --from=composer:2.2 /usr/bin/composer /usr/local/bin/composer
+RUN apt update && apt install -y zlib1g-dev libpng-dev libxml2-dev libzip-dev libcurl4-openssl-dev libpq-dev
+RUN docker-php-ext-install gd xml zip curl pdo_pgsql pgsql calendar
+COPY ./php/php.ini /usr/local/etc/php/conf.d/php.ini
